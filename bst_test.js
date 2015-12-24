@@ -1,12 +1,6 @@
 var bst = require('./bst');
 var clc = require('cli-color');
 
-//var fs = require('fs');
-
-//var fun_string = fs.readFileSync('./bst.js', 'utf-8');
-
-//var BST = new Function(fun_string);
-
 function testBST(num) {
 
 	console.log('Begining BST test...');

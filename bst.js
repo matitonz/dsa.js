@@ -75,8 +75,23 @@ function BinarySearchTree(compareFun) {
 		return false;
 	}
 
-	function rebalance(node) {
-		//fds
+	function find_parent(root, value) {
+		if (root === null || root === undefined || value === null || value === undefined) { return false; }
+		if (root instanceof Node) {
+			if (root.left === null && root.right === null) {
+				return false;
+			}
+			else if (root.left.value === value || root.right.value === value) {
+				return root;
+			}
+			else if (compareFun(root.value, value) > 0) {
+				return find_parent(root.left, value);
+			}
+			else if (compareFun(root.value, value) < 0) {
+				return find_parent(root.right, value);
+			}
+			return false;
+		}
 	}
 
 	api.add = function add(value) {
@@ -91,7 +106,6 @@ function BinarySearchTree(compareFun) {
 		}
 		// we already have a root value
 		return add_value(root, value);
-		// TODO: rebalance tree once new value added
 	}
 
 	api.get = function get(value) {
@@ -124,89 +138,127 @@ function BinarySearchTree(compareFun) {
 		return node_count;
 	}
 
-	api.remove = function remove(value) {
+	function remove(value) {
 		var result = find(root, value);
-		if (typeof result === Node) {
-			// remove somehow
-			// ???
-			// TODO: rebalance tree once value removed
-			rebalance(root);
-			return true;
+		if (result instanceof Node) {
+			var parent = find_parent(root, value);
+			if (result.left === null && result.right === null) {	// 1. no children - lead node
+				if (compareFun(parent.value, value) > 0) {
+					parent.left = null;
+				}
+				else {
+					parent.right = null;
+				}
+				return true;
+			}
+			else if (result.left && result.right === null) {		// 2. right branch is empty - left has nodes
+				var child_node = result.left;
+				if (parent) {
+					if (compareFun(parent.value, value) > 0) {
+						parent.left = child_node;
+					}
+					else {
+						parent.right = child_node;
+					}
+				}
+				else if (parent === false) {	// we are removing the root node
+					root = child_node;
+				}
+			}
+			else if (result.right && result.left === null) {		// 3. left branch is empty - right has nodes
+				var child_node = result.right;
+				if (parent) {
+					if (compareFun(parent.value, value) > 0) {
+						parent.left = child_node;
+					}
+					else {
+						parent.right = child_node;
+					}
+				}
+				else if (parent === false) {
+					root = child_node;
+				}
+			}
+			else if (result.left && result.right) {					// 4. both branches have nodes - choose left
+				// get highest number of left branch
+				var next_node = result.left;
+				while (next_node.right !== null) {
+					next_node = next_node.right;
+				}
+				var new_value = next_node.value;
+				if (remove(next_node.value)) {	// remove it
+					var new_node = new Node(new_value);
+					new_node.left = result.left;
+					new_node.right = result.right;
+					if (parent) {
+						if (compareFun(parent.value, value) > 0) {
+							parent.left = new_node;
+						}
+						else {
+							parent.right = new_node;
+						}
+					}
+					else if (parent === false) {
+						root = new_node;
+					}
+				}
+			}
 		}
 		else {
-			return false;
+			return false;	// could find value
 		}
 	}
 
-	function find_one_up(node, value) {
-		if (node === null || node === undefined || value === null || value === undefined) { return false; }
-		try {
-			var one_left = (typeof node.left === Node) ? compareFun(node.left.value, value) : false;
-			var result = compareFun(node.value, value);
-		} catch (e) {}
+	api.remove = remove;
 
-		if (one_left === 0) {
-			return node;
-		}
-		else if (result > 0) {
-			return find_one_up(node.left, value);
-		}
-		else if (result < 0) {
-			return find_one_up(node.right, value);
-		}
-		return false;
-	}
-
-	function next_higher_node(node, current_value) {
-		// first test that we don't have a null reference pointer
-		if (!node) { return false; }
-
-		if (node.right && node.right > current_value) { // if we have a right node - get the smallest child of right branch
-			node = node.right;
-			while (node.left) {
-				node = node.left;
-			}
-			return node;
-		}
-		else {
-			// must be the next highest one
-			find(root, node.value);
-			var temp = parent_node;
-			if (compareFun(temp.value, current_value) > 0) {
-				return temp;
-			}
-			else {		// parent is still less than the highest value - go another level higher
-				return next_higher_node(temp, current_value);
-			}
+	function inOrder(node) {
+		if (node instanceof Node) {
+			inOrder(node.left);
+			console.log(node.value);
+			inOrder(node.right);
 		}
 	}
 
 	api.getInOrder = function getInOrder() {
+		inOrder(root);
+	}
 
-		// if we have empty tree - return
-		if (!root) { return false; }
-
-		// get min value first
-		var node = root;
-		while (node.left) {
-			node = node.left;
-		}
-
-		return {
-			next: function () {
-				var value = node ? node.value : false;
-				if (node) {
-					node = next_higher_node(node, value);
-				}
-				return value;
-			}
+	function preOrder(node) {
+		if (node instanceof Node) {
+			console.log(node.value);
+			preOrder(node.left);
+			preOrder(node.right);
 		}
 	}
 
-	api.getPreOrder = function getPreOrder() { return false; }
+	api.getPreOrder = function getPreOrder() {
+		preOrder(root);
+	}
 
-	api.getPostOrder = function getPostOrder() { return false; }
+	function postOrder(node) {
+		if (node instanceof Node) {
+			postOrder(node.left);
+			postOrder(node.right);
+			console.log(node.value);
+		}
+	}
 
+	api.getPostOrder = function getPostOrder() {
+		postOrder(root);
+	}
+
+	function revOrder(node) {
+		if (node instanceof Node) {
+			revOrder(node.right);
+			console.log(node.value);
+			revOrder(node.left);
+		}
+	}
+
+	api.getRevOrder = function getRevOrder() {
+		revOrder(root);
+	}
+	
 	return api;
 
 }
