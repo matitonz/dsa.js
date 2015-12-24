@@ -1,7 +1,7 @@
 function BinarySearchTree(compareFun) {
-	
+
 	// force 'new' behaviour
-	if (!this) { this = {}; }
+	var api = {};
 
 	// if no compare function provided then we will asume numerical comparisons
 	if (!compareFun || typeof compareFun !== 'function') {
@@ -11,6 +11,8 @@ function BinarySearchTree(compareFun) {
 	}
 
 	var root = null;
+	var node_count = 0;
+	var parent_node = null;
 
 	function Node(value) {
 		this.value = value;
@@ -18,8 +20,11 @@ function BinarySearchTree(compareFun) {
 		this.right = null;
 	}
 
-	function blah(node, value) {
-		var result = compareFun(node.value, value);
+	function add_value(node, value) {
+		try {
+			var result = compareFun(node.value, value);
+		} catch (e) {}
+		
 		if (result === 0) {
 			// already have this value
 			node.value = value;
@@ -29,78 +34,69 @@ function BinarySearchTree(compareFun) {
 			// new value is less than this nodes value
 			if (node.left === null) {
 				node.left = new Node(value);
+				node_count++;
 				return true;
 			}
 			else {
-				blah(node.left, value);
+				return add_value(node.left, value);
 			}
 		}
 		else if (result < 0) {
 			// new value is greater than this nodes value
 			if (node.right === null) {
 				node.right = new Node(value);
+				node_count++;
 				return true;
 			}
 			else {
-				blah(node.right, vaule);
+				return add_value(node.right, value);
 			}
 		}
-		return false;
+		return false;	// error occurred in comparison function
 	}
 
 	function find(node, value) {
 		if (node === null || node === undefined || value === null || value === undefined) { return false; }
-		var result = compareFun(node.value, value);
+		try {
+			var result = compareFun(node.value, value);
+		} catch (e) {}
+
 		if (result === 0) {
 			return node;
 		}
 		else if (result > 0) {
+			parent_node = node;
 			return find(node.left, value);
 		}
 		else if (result < 0) {
+			parent_node = node;
 			return find(node.right, value);
 		}
 		return false;
-	}
-
-	function min(node) {
-		if (node.left) {
-			return min(node.left);
-		}
-		else {
-			return node;
-		}
-	}
-
-	function max(node) {
-		if (node.right) {
-			return max(node.right);
-		}
-		else {
-			return node;
-		}
 	}
 
 	function rebalance(node) {
 		//fds
 	}
 
-	this.add = function add(value) {
+	api.add = function add(value) {
 		// do not accept null or undefined values
 		if (value === null || value === undefined) { return false; }
 		// valid value - insert into tree
 		// if no root value make this the root
 		if (root === null) {
 			root = new Node(value);
+			node_count = 1;
 			return true;
 		}
 		// we already have a root value
-		blah(root, value);
+		return add_value(root, value);
+		// TODO: rebalance tree once new value added
 	}
 
-	this.getValue = function getValue(value) {
+	api.get = function get(value) {
 		var result = find(root, value);
-		if (result typeof Node) {
+		if (result instanceof Node) {
 			return result.value;
 		}
 		else {
@@ -108,21 +104,32 @@ function BinarySearchTree(compareFun) {
 		}
 	}
 
-	this.getMin = function min() {
-		return min(root);
+	api.min = function min() {
+		var current = root;
+		while (current.left !== null) {
+			current = current.left;
+		}
+		return current.value;
 	}
 
-	this.getMax = function max() {
-		return max(root);
+	api.max = function max() {
+		var current = root;
+		while (current.right !== null) {
+			current = current.right;
+		}
+		return current.value;
 	}
 
-	this.remove = function remove(value) {
+	api.count = function count() {
+		return node_count;
+	}
+
+	api.remove = function remove(value) {
 		var result = find(root, value);
-		if (result typeof Node) {
+		if (typeof result === Node) {
 			// remove somehow
 			// ???
-			// sdf
-			// rebalance tree
+			// TODO: rebalance tree once value removed
 			rebalance(root);
 			return true;
 		}
@@ -131,26 +138,79 @@ function BinarySearchTree(compareFun) {
 		}
 	}
 
-	this.getInOrder = function getInOrder() {
+	function find_one_up(node, value) {
+		if (node === null || node === undefined || value === null || value === undefined) { return false; }
+		try {
+			var one_left = (typeof node.left === Node) ? compareFun(node.left.value, value) : false;
+			var result = compareFun(node.value, value);
+		} catch (e) {}
 
+		if (one_left === 0) {
+			return node;
+		}
+		else if (result > 0) {
+			return find_one_up(node.left, value);
+		}
+		else if (result < 0) {
+			return find_one_up(node.right, value);
+		}
+		return false;
+	}
+
+	function next_higher_node(node, current_value) {
+		// first test that we don't have a null reference pointer
+		if (!node) { return false; }
+
+		if (node.right && node.right > current_value) { // if we have a right node - get the smallest child of right branch
+			node = node.right;
+			while (node.left) {
+				node = node.left;
+			}
+			return node;
+		}
+		else {
+			// must be the next highest one
+			find(root, node.value);
+			var temp = parent_node;
+			if (compareFun(temp.value, current_value) > 0) {
+				return temp;
+			}
+			else {		// parent is still less than the highest value - go another level higher
+				return next_higher_node(temp, current_value);
+			}
+		}
+	}
+
+	api.getInOrder = function getInOrder() {
+
+		// if we have empty tree - return
 		if (!root) { return false; }
+
 		// get min value first
-		var node = root.left;
-		while (node !== null) {
+		var node = root;
+		while (node.left) {
 			node = node.left;
 		}
 
 		return {
 			next: function () {
-				var value = node.value;
-				node = one_node_higher(node);
-				return value || false;
+				var value = node ? node.value : false;
+				if (node) {
+					node = next_higher_node(node, value);
+				}
+				return value;
 			}
 		}
 	}
 
-	this.getPreOrder = function getPreOrder() {}
+	api.getPreOrder = function getPreOrder() { return false; }
 
-	this.getPostOrder = function getPostOrder() {}
+	api.getPostOrder = function getPostOrder() { return false; }
+
+	return api;
 
 }
+
+exports.getBST = function (fun) {
+	return new BinarySearchTree(fun);
+};
