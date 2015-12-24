@@ -4,7 +4,7 @@ function Dictionary() {
 		internal_map[name] = value;
 	}
 	api.get = function (name) {
-		if (internal_map[name]) {
+		if (internal_map[name] !== undefined) {
 			return internal_map[name];
 		}
 		else {
