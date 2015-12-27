@@ -39,6 +39,11 @@ function Stack() {
 		}
 	};
 
+	exp.toString = function (delimiter) {
+		var delimiter = delimiter || '\n';
+		return datastore.join(delimiter);
+	};
+
 	exp.empty = is_empty;
 
 	return exp;
