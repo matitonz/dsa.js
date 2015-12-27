@@ -140,6 +140,6 @@ function LinkedList(compareFun) {
 	return api;
 }
 
-exports.getLinkedList = function () {
-	return new LinkedList();
+exports.getLinkedList = function (fun) {
+	return new LinkedList(fun);
 };

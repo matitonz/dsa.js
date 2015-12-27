@@ -168,8 +168,8 @@ function DoubleLinkedList(compareFun) {
 	return exp;
 }
 
-exports.getDoublyLinkedList = function () {
-	return new DoubleLinkedList();
+exports.getDoublyLinkedList = function (fun) {
+	return new DoubleLinkedList(fun);
 };
 
 // TODO: Unit tests for Doubly Linked List implementation
