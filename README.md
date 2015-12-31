@@ -3,7 +3,7 @@
 ###Data Structures
 
 ####TODO: avl.js
-A AVL tree in Javascript
+An AVL tree in Javascript
 
 ####bst.js
 A simple Binary Search Tree implementation in Javascript
