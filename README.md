@@ -1,22 +1,44 @@
-# data_struct.js
+# dsa.js
+
+###Data Structures
+
+####TODO: avl.js
+A AVL tree in Javascript
 
 ####bst.js
 A simple Binary Search Tree implementation in Javascript
 
 ####deque.js
-A simple Deque implementation in Javascript
+A simple Deque in Javascript
 
 ####dict.js
-A simple dictionary implementation in Javascript
+A simple Dictionary in Javascript
 
-####linked_list.js
-A simple linked list implementation in Javascript
+####dll.js
+A simple Doublely Linked List in Javascript
 
-####dlinked_list_d.js
-A simple doublely linked list implementation in Javascript
+####graph.js
+A simple Graph structure in Javascript
+
+####heap.js
+A Heap structure in Javascript
+
+####ll.js
+A simple Linked List in Javascript
 
 ####queue.js
-A simple queue in Javascript
+A simple Queue in Javascript
 
-####stack.js##
-A simple stack in Javascript
+####stack.js
+A simple Stack in Javascript
+
+####TODO: set.js
+An Ordered Set in Javascript
+
+###Algorithims
+
+####TODO: sort.js
+Basic sorts: Bubble sort, Selection sort, Insertion sort
+
+####TODO: sort2.js
+Advanced sorts: Shell sort, Merge sort, Quick sort, Radix sort
