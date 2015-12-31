@@ -26,6 +26,9 @@ A Heap structure in Javascript
 ####ll.js
 A simple Linked List in Javascript
 
+####TODO: pqueue.js
+A simple priority queue
+
 ####queue.js
 A simple Queue in Javascript
 
